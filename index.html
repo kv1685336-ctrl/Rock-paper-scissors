@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rock Paper Scissors</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 30px 16px;
+      background: #17172B;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game {
+      width: 100%;
+      max-width: 500px;
+      padding: 28px 20px;
+      background: #22223D;
+      border: 1px solid #414165;
+      border-radius: 24px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      color: #C4B5FD;
+    }
+
+    .subtitle {
+      color: #B8B8D8;
+      margin-bottom: 28px;
+    }
+
+    .scoreboard {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 30px;
+      margin: 25px 0;
+    }
+
+    .score {
+      flex: 1;
+      padding: 18px 10px;
+      background: #303052;
+      border-radius: 16px;
+    }
+
+    .score p {
+      margin: 0 0 8px;
+      color: #C8C8E8;
+      font-size: 14px;
+    }
+
+    .score h2 {
+      margin: 0;
+      font-size: 42px;
+    }
+
+    .vs {
+      color: #A5A5CB;
+      font-weight: bold;
+    }
+
+    .choices {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 28px 0;
+    }
+
+    .choice {
+      flex: 1;
+      min-width: 0;
+      padding: 16px 5px;
+      border: 2px solid #55557D;
+      border-radius: 16px;
+      background: #36365A;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+      transition: transform 0.15s, background 0.15s;
+    }
+
+    .choice:hover:not(:disabled) {
+      background: #514785;
+      transform: translateY(-3px);
+    }
+
+    .choice:focus-visible,
+    #restart:focus-visible {
+      outline: 3px solid #C4B5FD;
+      outline-offset: 3px;
+    }
+
+    .choice:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .emoji {
+      display: block;
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .round-info {
+      min-height: 90px;
+      padding: 16px;
+      background: #303052;
+      border-radius: 16px;
+      margin-top: 20px;
+    }
+
+    #result {
+      font-size: 19px;
+      font-weight: bold;
+      margin: 0 0 12px;
+    }
+
+    #details {
+      color: #C8C8E8;
+      font-size: 14px;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    #restart {
+      margin-top: 22px;
+      padding: 13px 24px;
+      border: none;
+      border-radius: 12px;
+      background: #A78BFA;
+      color: #17172B;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #restart:hover {
+      background: #C4B5FD;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media (max-width: 360px) {
+      .game {
+        padding: 24px 12px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+
+      .choices {
+        gap: 7px;
+      }
+
+      .choice {
+        font-size: 13px;
+        padding: 13px 3px;
+      }
+
+      .emoji {
+        font-size: 30px;
+      }
+
+      .scoreboard {
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="game">
+    <h1>ROCK PAPER SCISSORS</h1>
+    <p class="subtitle">First to 3 points wins!</p>
+
+    <section class="scoreboard" aria-label="Match score">
+      <div class="score">
+        <p>YOU</p>
+        <h2 id="playerScore">0</h2>
+      </div>
+
+      <span class="vs">VS</span>
+
+      <div class="score">
+        <p>COMPUTER</p>
+        <h2 id="computerScore">0</h2>
+      </div>
+    </section>
+
+    <p>Choose your move:</p>
+
+    <div class="choices">
+      <button class="choice" id="rock" data-choice="rock">
+        <span class="emoji" aria-hidden="true">✊</span>
+        Rock
+      </button>
+
+      <button class="choice" id="paper" data-choice="paper">
+        <span class="emoji" aria-hidden="true">✋</span>
+        Paper
+      </button>
+
+      <button class="choice" id="scissors" data-choice="scissors">
+        <span class="emoji" aria-hidden="true">✌️</span>
+        Scissors
+      </button>
+    </div>
+
+    <section class="round-info" aria-live="polite">
+      <p id="result">Choose your move!</p>
+      <p id="details">Your choice: — | Computer choice: —</p>
+    </section>
+
+    <button id="restart" class="hidden">Play Again</button>
+  </main>
+
+  <script>
+    const choices = ["rock", "paper", "scissors"];
+
+    let playerScore = 0;
+    let computerScore = 0;
+    let gameOver = false;
+
+    const playerScoreDisplay =
+      document.getElementById("playerScore");
+
+    const computerScoreDisplay =
+      document.getElementById("computerScore");
+
+    const resultDisplay =
+      document.getElementById("result");
+
+    const detailsDisplay =
+      document.getElementById("details");
+
+    const choiceButtons =
+      document.querySelectorAll(".choice");
+
+    const restartButton =
+      document.getElementById("restart");
+
+    function playRound(playerChoice) {
+      if (gameOver) {
+        return;
+      }
+
+      const computerChoice =
+        choices[Math.floor(Math.random() * choices.length)];
+
+      let message;
+
+      if (playerChoice === computerChoice) {
+        message = "It's a tie!";
+      } else if (
+        (playerChoice === "rock" &&
+          computerChoice === "scissors") ||
+        (playerChoice === "paper" &&
+          computerChoice === "rock") ||
+        (playerChoice === "scissors" &&
+          computerChoice === "paper")
+      ) {
+        message = "You won this round!";
+        playerScore++;
+      } else {
+        message = "The computer won this round!";
+        computerScore++;
+      }
+
+      playerScoreDisplay.textContent = playerScore;
+      computerScoreDisplay.textContent = computerScore;
+
+      detailsDisplay.textContent =
+        "Your choice: " + capitalize(playerChoice) +
+        " | Computer choice: " + capitalize(computerChoice);
+
+      resultDisplay.textContent = message;
+
+      if (playerScore === 3) {
+        endGame("You won the match! 🎉");
+      } else if (computerScore === 3) {
+        endGame("The computer won the match!");
+      }
+    }
+
+    function capitalize(word) {
+      return word.charAt(0).toUpperCase() + word.slice(1);
+    }
+
+    function endGame(message) {
+      gameOver = true;
+      resultDisplay.textContent = message;
+      restartButton.classList.remove("hidden");
+
+      choiceButtons.forEach(function(button) {
+        button.disabled = true;
+      });
+    }
+
+    function restartGame() {
+      playerScore = 0;
+      computerScore = 0;
+      gameOver = false;
+
+      playerScoreDisplay.textContent = "0";
+      computerScoreDisplay.textContent = "0";
+      resultDisplay.textContent = "Choose your move!";
+      detailsDisplay.textContent =
+        "Your choice: — | Computer choice: —";
+
+      choiceButtons.forEach(function(button) {
+        button.disabled = false;
+      });
+
+      restartButton.classList.add("hidden");
+    }
+
+    choiceButtons.forEach(function(button) {
+      button.addEventListener("click", function() {
+        playRound(button.dataset.choice);
+      });
+    });
+
+    restartButton.addEventListener("click", restartGame);
+  </script>
+</body>
+</html>
